@@ -9,3 +9,4 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+SensorX2car/camera2car/auto_calib/logs/checkpoint.pth

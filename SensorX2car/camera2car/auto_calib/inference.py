@@ -4,6 +4,7 @@ python inference.py --config-file config-files/ctrlc.yaml --opts MODE test DATAS
 '''
 import os
 import os.path as osp
+import sys
 import argparse
 from datetime import date
 import json
@@ -21,6 +22,10 @@ import math
 import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
+
+current_dir = os.path.dirname(__file__)
+sys.path.append(current_dir)
+
 import util.misc as utils
 from datasets import build_image_dataset
 from models import build_model
@@ -126,8 +131,8 @@ def inference(cfg):
             print("HL angle: {} rad".format(pred_hl))
 
             predictions[filename] = {
-                'vanishing_point': vp,
-                'horizon_line_inclination': pred_hl
+                'vanishing_point': vp[:2].tolist(),
+                'horizon_line_inclination': pred_hl.tolist()[0]
             }
 
     end = time.time()
@@ -135,16 +140,17 @@ def inference(cfg):
     print("FPS:", image_num / (end - start))
     return predictions
 
-def run_inference(input_dir, output_dir):
-    cfg.merge_from_file('config-files/ctrlc.yaml')
+def run_ctrlc_inference(input_dir, output_dir):
+    cfg.merge_from_file(os.path.join(current_dir, 'config-files/ctrlc.yaml'))
 
     cfg.MODE = 'test'
     cfg.DATASET_DIR = input_dir
     cfg.OUTPUT_DIR = output_dir
+    cfg.LOAD = os.path.join(current_dir, 'logs/checkpoint.pth')
     
     if cfg.OUTPUT_DIR:
         Path(cfg.OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
-    inference(cfg)
+    return inference(cfg)
 
             
 if __name__ == '__main__':
